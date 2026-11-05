@@ -105,6 +105,13 @@ class CastControl extends EventEmitter {
     }
     /* centring: the phone centres the car, the directions card above it */
     setCarplayCentre(on) { return this._send({ cmd: 'carplayCentre', on: !!on }); }
+    /* view areas: off, the phone is offered a plain display (no safe area) */
+    setCarplayViewAreas(on) { return this._send({ cmd: 'carplayViewAreas', on: !!on }); }
+    viewAreasText() {
+        const c = this.status && this.status.carplay && this.status.carplay.centre;
+        return 'CarPlay view areas: ' + (c ? (c.viewAreas === false ? 'off' : 'on') : '—');
+    }
+    carplayViewAreas() { const c = this.status && this.status.carplay && this.status.carplay.centre; return !c || c.viewAreas !== false; }
     /* the HUD's alternate mode: the wide picture, not centred */
     setCarplayHudAlt(on) { return this._send({ cmd: 'carplayHudAlt', on: !!on }); }
     carplayHudAlt() { return !!(this.status && this.status.carplay && this.status.carplay.hudAlt); }

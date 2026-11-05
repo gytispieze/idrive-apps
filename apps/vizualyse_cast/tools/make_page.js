@@ -21,6 +21,7 @@ const C = [
     [45, 'button', 'LT_Button_1Row', 'castCarplayZoomOut', 3, 'CarPlay map: zoom out'],
     [41, 'button', 'LT_Button_1Row', 'castCarplayCentre', 3, 'CarPlay: centre the map: on'],
     [42, 'button', 'LT_Button_1Row', 'castCarplayHudAlt', 3, 'CarPlay HUD alternate mode: off'],
+    [46, 'button', 'LT_Button_1Row', 'castCarplayViewAreas', 3, 'CarPlay view areas: on'],
     [36, 'button', 'LT_Button_1Row', 'castCarplayMap', 3, 'CarPlay map on the cluster'],
     [37, 'button', 'LT_Button_1Row', 'castCarplayHud', 3, 'CarPlay map on the HUD'],
     [31, 'button', 'LT_Button_1Row', 'castMap', 3, 'Play last on the cluster map'],

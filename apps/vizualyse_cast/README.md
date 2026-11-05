@@ -35,7 +35,7 @@ socket in the Cast app's own group (only it and root can connect), newline-delim
 link, canReplay, outputs, url}` on connect, after each command and once a
 second (with `enabled` and `carplay`); the app sends `{"cmd":"stop"}`,
 `{"cmd":"replay","output":…}`, `{"cmd":"carplay","output":"map"|"hud"}`,
-`{"cmd":"hook111","mode":"off"|"alt"}`, `{"cmd":"carplayCards","directions":…,"eta":…}`, `{"cmd":"carplayZoom","dir":"in"|"out"}`, `{"cmd":"carplayCentre","on":…}`, `{"cmd":"carplayHudAlt","on":…}`,
+`{"cmd":"hook111","mode":"off"|"alt"}`, `{"cmd":"carplayCards","directions":…,"eta":…}`, `{"cmd":"carplayZoom","dir":"in"|"out"}`, `{"cmd":"carplayCentre","on":…}`, `{"cmd":"carplayHudAlt","on":…}`, `{"cmd":"carplayViewAreas","on":…}`,
 `{"cmd":"enable"}`, `{"cmd":"disable"}` and `{"cmd":"qr","show":…}`. The app
 holds it while its page is visible. `tools/make_page.js` writes the page's
 application.xml and uiDescription.json from one list.
@@ -45,7 +45,7 @@ application.xml and uiDescription.json from one list.
 ```sh
 node tools/build.js          # the source package; the unit builds the app
 node tools/test_page.js      # the page against a fake SDK and HMI and the tool's real control socket
-node tools/make_icon.js vizualyse_cast@0.3.5/rhmiData/variantGroups/Common/images/vizualyse_cast_icon.png
+node tools/make_icon.js vizualyse_cast@0.3.6/rhmiData/variantGroups/Common/images/vizualyse_cast_icon.png
 ```
 
 The structure (SDK use, tile, visibility, the QR handles) follows

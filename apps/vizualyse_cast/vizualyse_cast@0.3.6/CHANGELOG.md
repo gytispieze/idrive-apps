@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.6
+
+- CarPlay view areas: on / off. Off offers the phone a plain display with no
+  safe area, to see whether Waze then shows road hazards on the cluster. It
+  applies from the phone's next connection.
+- Requires vizualyse-cast 0.3.9.
+
 ## 0.3.5
 
 - CarPlay directions card: on / off, and CarPlay time / distance card: on /

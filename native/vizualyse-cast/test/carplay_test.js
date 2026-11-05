@@ -164,6 +164,10 @@ function unit() {
     ok('centre off: view area 1 (Maps\' own layout), the safe area still offered (the switch is live, no reconnect)',
         cd.viewarea === 1 && fs.readFileSync(path.join(crun, 'viewarea'), 'utf8') === '1\n' && cd.safearea === '322,20,340,435' &&
         fs.readFileSync(path.join(crun, 'safearea'), 'utf8') === '322,20,340,435\n');
+    cd = cp.wantDisplay('map', crun, true, false, false);
+    ok('view areas off: no safe area, the file removed (hook111 offers no view areas), pending until the phone reconnects',
+        cd.safearea === null && cd.pending && !fs.existsSync(path.join(crun, 'safearea')));
+    cp.wantDisplay('map', crun, true);
 
     /* the cluster scene: the cards, as found on the car */
     const U = 'maps:/car/instrumentcluster';
@@ -350,9 +354,9 @@ async function server(cluster) {
         await sleep(300);
         st = JSON.parse((await get(PORT, '/api/status', token)).body);
         const saved = JSON.parse(fs.readFileSync(path.join(state, 'settings.json'), 'utf8'));
-        ok('control socket, carplayCentre off: view area 1 written (live), the safe area kept, saved, the stream not restarted',
+        ok('control socket, carplayCentre off:                 view area 1 written (live), the safe area kept, saved, the stream not restarted',
             !cc.some((l) => l.ev === 'error') && fs.readFileSync(path.join(run, 'viewarea'), 'utf8').trim() === '1' &&
-            fs.readFileSync(path.join(run, 'safearea'), 'utf8').trim() === '322,20,340,435' && st.carplay.centre.on === false &&
+                    fs.readFileSync(path.join(run, 'safearea'), 'utf8').trim() === '322,20,340,435' &&   st.carplay.centre.on === false &&
             saved.carplayCentre === false && starts() === n0);
         ok('... and the scene for Maps\' own layout: both cards (wide)', fs.readFileSync(path.join(run, 'url'), 'utf8').trim() === 'maps:/car/instrumentcluster?showETA=yes');
         ok('0.3.5\'s shape and vignette settings dropped from the settings file', !('carplayShape' in saved) && !('carplayVignette' in saved));

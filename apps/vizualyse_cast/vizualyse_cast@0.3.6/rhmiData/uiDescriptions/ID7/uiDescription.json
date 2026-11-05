@@ -457,6 +457,28 @@
               }
             }
           ]
+        },
+        "46": {
+          "type": "button",
+          "name": "castCarplayViewAreas",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "CarPlay view areas: on",
+                "type": "Text"
+              }
+            }
+          ]
         }
       }
     }

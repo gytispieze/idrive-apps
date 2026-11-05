@@ -138,9 +138,9 @@ async function main() {
     assert.strictEqual(comps['21'].name, 'castQr');
     assert(/<component id="21" type="label" widget="LT_Label_1Graphic_Scalable">/.test(XML), 'the QR is a scalable graphic label');
     const buttons = Object.keys(comps).filter((id) => comps[id].type === 'button').map((id) => comps[id].name).sort();
-    assert.deepStrictEqual(buttons, ['castCarplayCentre', 'castCarplayDirections', 'castCarplayEta', 'castCarplayHud', 'castCarplayHudAlt', 'castCarplayMap', 'castCarplayOn', 'castCarplayZoomIn', 'castCarplayZoomOut',
+    assert.deepStrictEqual(buttons, ['castCarplayCentre', 'castCarplayDirections', 'castCarplayEta', 'castCarplayHud', 'castCarplayHudAlt', 'castCarplayMap',     'castCarplayOn', 'castCarplayViewAreas', 'castCarplayZoomIn', 'castCarplayZoomOut',
         'castConsole', 'castEnable', 'castHud', 'castMap', 'castQrToggle', 'castStop']);
-    console.log('ok   page: 15 buttons, a QR graphic, xml and uiDescription agree');
+        console.log('ok   page: 16 buttons, a QR graphic, xml and uiDescription agree');
 
     process.exit = (code) => { throw new Error('process.exit(' + code + ')'); };
     runSource();
@@ -243,6 +243,16 @@ async function main() {
     byName.castCarplayHudAlt.emit('action');
     await until('HUD alternate off sent', () => received.some((c) => c.cmd === 'carplayHudAlt' && c.on === false));
     console.log('ok   the HUD alternate mode: shown; a press toggles it (carplayHudAlt)');
+    st = Object.assign({}, st, { carplay: Object.assign({}, st.carplay, { centre: { on: true, viewAreas: true, pending: null } }) });
+    control.broadcast();
+    await until('view areas shown, on', () => byName.castCarplayViewAreas.enabled === true && byName.castCarplayViewAreas.text === 'CarPlay view areas: on');
+    await sleep(450);
+    byName.castCarplayViewAreas.emit('action');
+    await until('view areas off sent', () => received.some((c) => c.cmd === 'carplayViewAreas' && c.on === false));
+    st = Object.assign({}, st, { carplay: Object.assign({}, st.carplay, { centre: { on: true, viewAreas: false, pending: null } }) });
+    control.broadcast();
+    await until('view areas shown, off', () => byName.castCarplayViewAreas.text === 'CarPlay view areas: off');
+    console.log('ok   view areas: shown; a press toggles it (carplayViewAreas)');
     st = Object.assign({}, st, { carplay: { armed: true, ready: true, mode: 'alt', switch: { installed: true, on: true, pending: null } } });
     control.broadcast();
     await until('carplay enabled', () => byName.castCarplayMap.enabled === true && byName.castCarplayHud.enabled === true);

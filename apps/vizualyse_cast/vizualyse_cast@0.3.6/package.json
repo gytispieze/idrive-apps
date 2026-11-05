@@ -1,6 +1,6 @@
 {
   "name": "vizualyse_cast",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Cast to cluster: shows the phone link and QR code for the cast service, its status, and replays the last stream on the cluster, the HUD or the media console",
   "private": false,
   "main": "javascript/runner.js",

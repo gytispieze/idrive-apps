@@ -77,6 +77,11 @@ connection. On the car (2026-11-04, Google Maps): the car centred, the
 directions card above it. Without a safe area Google Maps puts the car low
 and a quarter across, the card top right. The commands are
 `{"cmd":"carplayCentre","on":…}` and `POST /api/carplay-centre`.
+With view areas off (phone page "Offer view areas", `{"cmd":"carplayViewAreas","on":false}`,
+`POST /api/carplay-view-areas`) no safe area file is written, so hook111
+offers no view areas and the phone sees a plain display (Waze may hide road
+hazards on a small viewport); the scene is the wide one. It takes effect at the
+phone's next connection.
 
 **The HUD's alternate mode** ("CarPlay HUD alternate mode" / "HUD alternate
 mode"; off by default): with it, the CarPlay picture on the HUD is the wide

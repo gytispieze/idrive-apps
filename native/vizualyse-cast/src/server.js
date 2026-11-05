@@ -104,8 +104,9 @@ const cr = new ClusterRender('vizualyse_cast');
  * asked to centre its view (the target's safe area; on by default), and the
  * HUD's alternate mode (the wide 1056x384 picture, not centred; off). */
 const SETTINGS_FILE = path.join(STATE_DIR, 'settings.json');
-const settings = Object.assign({ enabled: true, clusterQr: false, carplayDirections: true, carplayEta: true, carplayCentre: true, carplayHudAlt: false }, readJson(SETTINGS_FILE) || {});
+const settings = Object.assign({ enabled: true, clusterQr: false, carplayDirections: true, carplayEta: true, carplayCentre: true, carplayViewAreas: true, carplayHudAlt: false }, readJson(SETTINGS_FILE) || {});
 settings.carplayCentre = settings.carplayCentre !== false;
+settings.carplayViewAreas = settings.carplayViewAreas !== false;
 settings.carplayHudAlt = settings.carplayHudAlt === true;
 settings.carplayDirections = settings.carplayDirections !== false;
 settings.carplayEta = settings.carplayEta !== false;
@@ -240,7 +241,7 @@ function play(opts) {
         const t = carplay.TARGETS[opts.output];
         o = Object.assign({}, o, { w: t.w, h: t.h, fps: t.fps }, t.xband ? { xband: t.xband } : {}, t.band ? { band: t.band } : {});
         try {
-            const d = carplay.wantDisplay(opts.output, undefined, settings.carplayCentre, settings.carplayHudAlt);
+            const d = carplay.wantDisplay(opts.output, undefined, settings.carplayCentre, settings.carplayHudAlt, settings.carplayViewAreas);
             if (d) log('carplay: asking for ' + d.wanted + (d.safearea ? ', safe area ' + d.safearea : ', no safe area') +
                 (d.pending ? ' (from the phone\'s next connection; until then scaled)' : ''));
         } catch (e) { log('carplay: display: ' + e.message); }
@@ -415,6 +416,10 @@ const web = http.createServer((req, res) => {
             setCarplayCentre(b.on === true);
             return json(res, 200, status());
         }
+        if (u.pathname === '/api/carplay-view-areas') {
+            setCarplayViewAreas(b.on === true);
+            return json(res, 200, status());
+        }
         if (u.pathname === '/api/carplay-hud-alt') {
             setCarplayHudAlt(b.on === true);
             return json(res, 200, status());
@@ -476,7 +481,7 @@ const hudAltOn = (out) => out === 'hud' && settings.carplayHudAlt;
  * at once. The HUD's alternate mode shows the time / distance card only. */
 function sceneOpts(out) {
     const alt = hudAltOn(out);
-    return { directions: alt ? false : settings.carplayDirections, eta: settings.carplayEta, wide: alt || !settings.carplayCentre };
+    return { directions: alt ? false : settings.carplayDirections, eta: settings.carplayEta, wide: alt || !settings.carplayCentre || !settings.carplayViewAreas };
 }
 function syncScene() {
     try { return carplay.wantScene(sceneOpts(carplayOutput())); } catch (e) { log('carplay: scene: ' + e.message); return null; }
@@ -507,19 +512,32 @@ function carplayZoom(dir) {
 /* Centre the map: view area 0, the phone's view centred on the target's safe
  * area (carplay_screen TARGETS[].safe): the directions card at the top, the
  * car, the time / distance card at the bottom. Off: view area 1, Maps' own
- * layout. hook111 0.1.5 switches it at once (updateViewArea). */
+ * layout. hook111 0.1.5 switches it at once (updateViewArea).
+ * View areas off (carplayViewAreas false): no safe area is written, so
+ * hook111 offers none and the phone sees a plain display; from the phone's
+ * next connection. */
 function carplayCentre(c) {
     const out = carplayOutput();
-    return { on: settings.carplayCentre, safearea: carplay.safeText(carplay.safeAreaFor(out, hudAltOn(out))),
+    return { on: settings.carplayCentre, viewAreas: settings.carplayViewAreas,
+        safearea: settings.carplayViewAreas ? carplay.safeText(carplay.safeAreaFor(out, hudAltOn(out))) : null,
         pending: c.streaming && c.viewarea !== null && c.viewarea !== (settings.carplayCentre ? 0 : 1) ? 'in a moment' : null };
 }
 function setCarplayCentre(on) {
     settings.carplayCentre = !!on;
     saveSettings();
     const out = carplayOutput();
-    try { carplay.wantDisplay(out, undefined, settings.carplayCentre, hudAltOn(out)); } catch (e) { log('carplay: centre: ' + e.message); }
+    try { carplay.wantDisplay(out, undefined, settings.carplayCentre, hudAltOn(out), settings.carplayViewAreas); } catch (e) { log('carplay: centre: ' + e.message); }
     syncScene();
     log('carplay: centre ' + (on ? 'on' : 'off') + ' saved');
+    return null;
+}
+function setCarplayViewAreas(on) {
+    settings.carplayViewAreas = !!on;
+    saveSettings();
+    const out = carplayOutput();
+    try { carplay.wantDisplay(out, undefined, settings.carplayCentre, hudAltOn(out), settings.carplayViewAreas); } catch (e) { log('carplay: view areas: ' + e.message); }
+    syncScene();
+    log('carplay: view areas ' + (on ? 'on' : 'off') + ' saved, from the phone\'s next connection');
     return null;
 }
 /* The HUD's alternate mode: the phone draws the HUD band's own wide shape
@@ -532,7 +550,7 @@ function setCarplayHudAlt(on) {
     saveSettings();
     const onHud = player && player.opts.source === 'carplay' && player.opts.output === 'hud';
     let d = null;
-    if (onHud) { try { d = carplay.wantDisplay('hud', undefined, settings.carplayCentre, settings.carplayHudAlt); } catch (e) { log('carplay: hud: ' + e.message); } }
+    if (onHud) { try { d = carplay.wantDisplay('hud', undefined, settings.carplayCentre, settings.carplayHudAlt, settings.carplayViewAreas); } catch (e) { log('carplay: hud: ' + e.message); } }
     syncScene();
     log('carplay: HUD alternate mode ' + (on ? 'on' : 'off') + ' saved' + (d ? ', asking for ' + d.wanted + ', from the phone\'s next connection' : ', from the next play on the HUD'));
     return null;
@@ -563,6 +581,7 @@ function command(c) {
     if (c.cmd === 'carplayCards') return setCarplayCards(c);
     if (c.cmd === 'carplayZoom') return carplayZoom(c.dir);
     if (c.cmd === 'carplayCentre') return setCarplayCentre(c.on === true);
+    if (c.cmd === 'carplayViewAreas') return setCarplayViewAreas(c.on === true);
     if (c.cmd === 'carplayHudAlt') return setCarplayHudAlt(c.on === true);
     if (!settings.enabled) return 'Cast to cluster is off';
     if (c.cmd === 'carplay') return playCarplay(c.output);

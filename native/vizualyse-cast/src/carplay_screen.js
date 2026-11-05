@@ -217,13 +217,15 @@ function safeText(s) { return s ? s.x + ',' + s.y + ',' + s.w + ',' + s.h : null
  * reconnect. alt: the HUD's alternate mode (no safe area). Returns
  * { wanted, safearea, viewarea, pending } (pending: the phone is still on
  * another size or safe area), or null when hook111 isn't there to read it. */
-function wantDisplay(output, run, centre, alt) {
+function wantDisplay(output, run, centre, alt, areas) {
     run = run || RUN;
     const d = drawFor(output, alt);
     if (!d || !fs.existsSync(run)) return null;
     const want = displayText(d.display);
     writeIfChanged(path.join(run, 'display'), want);
-    const sa = safeText(safeAreaFor(output, alt)), sf = path.join(run, 'safearea');
+    /* areas false: no safe area file, so hook111 offers no view areas at all
+     * (a plain display; Waze may hide road hazards on a small viewport) */
+    const sa = areas === false ? null : safeText(safeAreaFor(output, alt)), sf = path.join(run, 'safearea');
     if (sa) writeIfChanged(sf, sa);
     else { try { fs.unlinkSync(sf); } catch (e) { /* none */ } }
     const va = centre === false ? '1' : '0';

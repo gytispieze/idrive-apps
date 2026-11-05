@@ -55,6 +55,7 @@
   <div class="row"><span>Time / distance card <span class="small" id="cpCardsPending"></span></span><input id="cpEta" type="checkbox"></div>
   <div class="row"><span>Zoom the map</span><span class="seg" style="width:140px"><button id="cpZoomOut">−</button><button id="cpZoomIn">+</button></span></div>
   <div class="row"><span>Centre the map <span class="small" id="cpCentrePending"></span></span><input id="cpCentre" type="checkbox"></div>
+  <div class="row"><span>Offer view areas <span class="small">(off: plain display; may show Waze hazards)</span></span><input id="cpViewAreas" type="checkbox"></div>
   <div class="row"><span>HUD alternate mode <span class="small">(wider, not centred)</span></span><input id="cpHudAlt" type="checkbox"></div>
   <div class="small" id="cpState">—</div>
   <div class="small">CarPlay's own cluster view (Google Maps or Apple Maps), next to the main CarPlay screen. The phone draws it at the size of the chosen output from its next connection; until then it is scaled to fit.</div>
@@ -160,6 +161,8 @@
     $('cpCentre').disabled = !sw.installed;
     if (document.activeElement !== $('cpCentre')) $('cpCentre').checked = ce.on !== false;
     $('cpCentrePending').textContent = ce.pending ? '(' + ce.pending + ')' : '';
+    $('cpViewAreas').disabled = !sw.installed;
+    if (document.activeElement !== $('cpViewAreas')) $('cpViewAreas').checked = ce.viewAreas !== false;
     $('cpHudAlt').disabled = !sw.installed;
     if (document.activeElement !== $('cpHudAlt')) $('cpHudAlt').checked = !!(s.carplay && s.carplay.hudAlt);
     $('sub').textContent = 'Uplink ' + s.uplink + ' · renderer ' + s.render;
@@ -222,6 +225,13 @@
     var box = this;
     box.disabled = true;
     api('/api/carplay-centre', { on: box.checked })
+      .then(show).catch(function (e) { $('err').textContent = e.message; box.checked = !box.checked; })
+      .then(function () { box.disabled = false; });
+  };
+  $('cpViewAreas').onchange = function () {
+    var box = this;
+    box.disabled = true;
+    api('/api/carplay-view-areas', { on: box.checked })
       .then(show).catch(function (e) { $('err').textContent = e.message; box.checked = !box.checked; })
       .then(function () { box.disabled = false; });
   };

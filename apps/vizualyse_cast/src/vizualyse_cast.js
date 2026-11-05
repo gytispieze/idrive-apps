@@ -32,7 +32,7 @@ const STATE_NAME = 'ST_OnlineApps_VizualyseCast';
 const N = {
     status: 'castStatus', qr: 'castQr', link: 'castLink', hint: 'castHint', stop: 'castStop',
     map: 'castMap', hud: 'castHud', console: 'castConsole', qrToggle: 'castQrToggle', info: 'castInfo',
-    enable: 'castEnable', carplayOn: 'castCarplayOn', carplayDirections: 'castCarplayDirections', carplayEta: 'castCarplayEta', carplayZoomIn: 'castCarplayZoomIn', carplayZoomOut: 'castCarplayZoomOut', carplayCentre: 'castCarplayCentre', carplayHudAlt: 'castCarplayHudAlt', carplayMap: 'castCarplayMap', carplayHud: 'castCarplayHud',
+    enable: 'castEnable', carplayOn: 'castCarplayOn', carplayDirections: 'castCarplayDirections', carplayEta: 'castCarplayEta', carplayZoomIn: 'castCarplayZoomIn', carplayZoomOut: 'castCarplayZoomOut', carplayCentre: 'castCarplayCentre', carplayHudAlt: 'castCarplayHudAlt', carplayViewAreas: 'castCarplayViewAreas', carplayMap: 'castCarplayMap', carplayHud: 'castCarplayHud',
 };
 const PRESS_DEDUPE_MS = 400;
 const ROW_CHARS = 90;
@@ -132,6 +132,7 @@ class CastApp extends OnlineApp {
         this._bind(N.carplayZoomOut, () => this._control.zoom('out'));
         this._bind(N.carplayCentre, () => this._control.setCarplayCentre(!this._control.carplayCentre().on));
         this._bind(N.carplayHudAlt, () => this._control.setCarplayHudAlt(!this._control.carplayHudAlt()));
+        this._bind(N.carplayViewAreas, () => this._control.setCarplayViewAreas(!this._control.carplayViewAreas()));
         this._bind(N.carplayMap, () => this._control.carplay('map'));
         this._bind(N.carplayHud, () => this._control.carplay('hud'));
         this._bind(N.map, () => this._control.replay('map'));
@@ -281,6 +282,8 @@ class CastApp extends OnlineApp {
         this._setEnabled(N.carplayCentre, up && c.carplaySwitch().installed);
         this._write(N.carplayHudAlt, c.hudAltText());
         this._setEnabled(N.carplayHudAlt, up && c.carplaySwitch().installed);
+        this._write(N.carplayViewAreas, c.viewAreasText());
+        this._setEnabled(N.carplayViewAreas, up && c.carplaySwitch().installed);
         this._setEnabled(N.carplayMap, on && c.canCarplay());
         this._setEnabled(N.carplayHud, on && c.canCarplay());
         ['map', 'hud', 'console'].forEach((k) => {
