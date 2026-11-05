@@ -83,6 +83,11 @@ offers no view areas and the phone sees a plain display (Waze may hide road
 hazards on a small viewport); the scene is the wide one. It takes effect at the
 phone's next connection.
 
+**Scene URL** (phone page "Scene URL"; `{"cmd":"carplayScene","url":"maps:/car/…"}`,
+`POST /api/carplay-scene`): a maps:/car/ URL typed by hand replaces the cards'
+scene and is sent to the phone at once, to try what Waze draws for it (for
+instance whether road hazards appear). Empty goes back to the cards' own.
+
 **The HUD's alternate mode** ("CarPlay HUD alternate mode" / "HUD alternate
 mode"; off by default): with it, the CarPlay picture on the HUD is the wide
 1056x384 that fills the HUD's band, not centred, with the time / distance
