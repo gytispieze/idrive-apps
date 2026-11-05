@@ -55,7 +55,13 @@ const VIEW_TITLES = { cluster: 'map and directions', map: 'map only', card: 'dir
  * `wide`: the safe area isn't the narrow centred one (centring off, or the
  * HUD's alternate mode). */
 const SCENE_ROOT = 'maps:/car/instrumentcluster';
+/* A scene URL typed in by hand, to try what Waze draws for it (o.override):
+ * a maps:/car/ URL without spaces or control characters, or '' for none. */
+function validScene(u) {
+    return typeof u === 'string' && u.length <= 200 && /^maps:\/car\/[\x21-\x7e]*$/.test(u);
+}
 function sceneUrl(o) {
+    if (o.override && validScene(o.override)) return o.override;
     if (o.directions && o.eta) return SCENE_ROOT + '?showETA=yes';
     if (o.directions) return SCENE_ROOT + '?showETA=no';
     if (o.eta) return o.wide ? SCENE_ROOT + '/map?showETA=yes' : SCENE_ROOT + '?showETA=yes&maneuverLayout=topAligned';
@@ -312,4 +318,4 @@ function switchState(o) {
     return { installed: true, on: saved === 'alt', saved: saved, pending: pending };
 }
 
-module.exports = { TARGETS, RUN, VAR, ARM, MODES, VIEWS, VIEW_TITLES, DEFAULT_PORT, state, savedMode, setMode, switchState, drawFor, safeAreaFor, safeText, wantDisplay, wantView, sceneUrl, wantScene, requestZoom, inputArgs, outputArgs, readKv, displayText };
+module.exports = { TARGETS, RUN, VAR, ARM, MODES, VIEWS, VIEW_TITLES, DEFAULT_PORT, state, savedMode, setMode, switchState, drawFor, validScene, safeAreaFor, safeText, wantDisplay, wantView, sceneUrl, wantScene, requestZoom, inputArgs, outputArgs, readKv, displayText };

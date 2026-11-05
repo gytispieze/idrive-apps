@@ -104,7 +104,7 @@ const cr = new ClusterRender('vizualyse_cast');
  * asked to centre its view (the target's safe area; on by default), and the
  * HUD's alternate mode (the wide 1056x384 picture, not centred; off). */
 const SETTINGS_FILE = path.join(STATE_DIR, 'settings.json');
-const settings = Object.assign({ enabled: true, clusterQr: false, carplayDirections: true, carplayEta: true, carplayCentre: true, carplayViewAreas: true, carplayHudAlt: false }, readJson(SETTINGS_FILE) || {});
+const settings = Object.assign({ enabled: true, clusterQr: false, carplayDirections: true, carplayEta: true, carplayCentre: true, carplayViewAreas: true, carplaySceneUrl: '', carplayHudAlt: false }, readJson(SETTINGS_FILE) || {});
 settings.carplayCentre = settings.carplayCentre !== false;
 settings.carplayViewAreas = settings.carplayViewAreas !== false;
 settings.carplayHudAlt = settings.carplayHudAlt === true;
@@ -416,6 +416,11 @@ const web = http.createServer((req, res) => {
             setCarplayCentre(b.on === true);
             return json(res, 200, status());
         }
+        if (u.pathname === '/api/carplay-scene') {
+            const why = setCarplayScene(b.url);
+            if (why) return json(res, 400, { error: why });
+            return json(res, 200, status());
+        }
         if (u.pathname === '/api/carplay-view-areas') {
             setCarplayViewAreas(b.on === true);
             return json(res, 200, status());
@@ -481,14 +486,25 @@ const hudAltOn = (out) => out === 'hud' && settings.carplayHudAlt;
  * at once. The HUD's alternate mode shows the time / distance card only. */
 function sceneOpts(out) {
     const alt = hudAltOn(out);
-    return { directions: alt ? false : settings.carplayDirections, eta: settings.carplayEta, wide: alt || !settings.carplayCentre || !settings.carplayViewAreas };
+    return { directions: alt ? false : settings.carplayDirections, eta: settings.carplayEta, wide: alt || !settings.carplayCentre || !settings.carplayViewAreas,
+        override: settings.carplaySceneUrl };
+}
+/* A scene URL set by hand ('' back to the cards' own): sent to the phone at once. */
+function setCarplayScene(url) {
+    url = typeof url === 'string' ? url.trim() : '';
+    if (url && !carplay.validScene(url)) return 'a scene URL starts with maps:/car/ and has no spaces';
+    settings.carplaySceneUrl = url;
+    saveSettings();
+    const r = syncScene();
+    log('carplay: scene ' + (url ? 'set to ' + url : 'back to the cards') + (r ? '' : ', from the next start (hook111 is not armed this start)'));
+    return null;
 }
 function syncScene() {
     try { return carplay.wantScene(sceneOpts(carplayOutput())); } catch (e) { log('carplay: scene: ' + e.message); return null; }
 }
 function carplayCards(c) {
     const url = carplay.sceneUrl(sceneOpts(carplayOutput()));
-    return { directions: settings.carplayDirections, eta: settings.carplayEta, url: url,
+    return { directions: settings.carplayDirections, eta: settings.carplayEta, url: url, override: settings.carplaySceneUrl || '',
         pending: c.streaming && c.uiUrl !== url ? 'in a moment' : null };
 }
 function setCarplayCards(b) {
@@ -581,6 +597,7 @@ function command(c) {
     if (c.cmd === 'carplayCards') return setCarplayCards(c);
     if (c.cmd === 'carplayZoom') return carplayZoom(c.dir);
     if (c.cmd === 'carplayCentre') return setCarplayCentre(c.on === true);
+    if (c.cmd === 'carplayScene') return setCarplayScene(c.url);
     if (c.cmd === 'carplayViewAreas') return setCarplayViewAreas(c.on === true);
     if (c.cmd === 'carplayHudAlt') return setCarplayHudAlt(c.on === true);
     if (!settings.enabled) return 'Cast to cluster is off';

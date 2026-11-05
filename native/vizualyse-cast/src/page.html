@@ -14,7 +14,7 @@
   .sub { color:var(--dim); font-size:14px; margin-bottom:16px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px; }
   label.t { display:block; font-size:13px; color:var(--dim); margin:0 0 6px; text-transform:uppercase; letter-spacing:.04em; }
-  input[type=url] { width:100%; font-size:16px; padding:12px; border-radius:10px; border:1px solid var(--line);
+  input[type=url], input[type=text] { width:100%; font-size:16px; padding:12px; border-radius:10px; border:1px solid var(--line);
                     background:var(--bg); color:var(--text); }
   .seg { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .seg button { padding:12px 8px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--text); font-size:15px; }
@@ -58,6 +58,9 @@
   <div class="row"><span>Offer view areas <span class="small">(off: plain display; may show Waze hazards)</span></span><input id="cpViewAreas" type="checkbox"></div>
   <div class="row"><span>HUD alternate mode <span class="small">(wider, not centred)</span></span><input id="cpHudAlt" type="checkbox"></div>
   <div class="small" id="cpState">—</div>
+  <div class="row" style="display:block"><span>Scene URL <span class="small">(to try what Waze draws; empty: the cards' own)</span> <span class="small" id="cpSceneNow"></span></span>
+    <input id="cpScene" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="maps:/car/instrumentcluster" style="margin-top:8px">
+    <span class="seg" style="margin-top:8px"><button id="cpSceneSet">Set</button><button id="cpSceneClear">Cards' own</button></span></div>
   <div class="small">CarPlay's own cluster view (Google Maps or Apple Maps), next to the main CarPlay screen. The phone draws it at the size of the chosen output from its next connection; until then it is scaled to fit.</div>
 </div>
 
@@ -157,6 +160,9 @@
     if (document.activeElement !== $('cpDirections')) $('cpDirections').checked = cd.directions !== false;
     if (document.activeElement !== $('cpEta')) $('cpEta').checked = cd.eta !== false;
     $('cpCardsPending').textContent = cd.pending ? '(' + cd.pending + ')' : '';
+    ['cpScene', 'cpSceneSet', 'cpSceneClear'].forEach(function (id) { $(id).disabled = !sw.installed; });
+    if (document.activeElement !== $('cpScene')) $('cpScene').value = cd.override || '';
+    $('cpSceneNow').textContent = cd.url ? '(sent: ' + cd.url + ')' : '';
     var ce = (s.carplay && s.carplay.centre) || {};
     $('cpCentre').disabled = !sw.installed;
     if (document.activeElement !== $('cpCentre')) $('cpCentre').checked = ce.on !== false;
@@ -228,6 +234,14 @@
       .then(show).catch(function (e) { $('err').textContent = e.message; box.checked = !box.checked; })
       .then(function () { box.disabled = false; });
   };
+  function scene(url) {
+    return function () {
+      api('/api/carplay-scene', { url: url === null ? $('cpScene').value.trim() : url })
+        .then(show).catch(function (e) { $('err').textContent = e.message; });
+    };
+  }
+  $('cpSceneSet').onclick = scene(null);
+  $('cpSceneClear').onclick = scene('');
   $('cpViewAreas').onchange = function () {
     var box = this;
     box.disabled = true;

@@ -176,6 +176,11 @@ function unit() {
         cp.sceneUrl({ directions: false, eta: true }) === U + '?showETA=yes&maneuverLayout=topAligned' &&
         cp.sceneUrl({ directions: false, eta: true, wide: true }) === U + '/map?showETA=yes' && cp.sceneUrl({ directions: false, eta: false }) === U + '/map');
     let sc = cp.wantScene({ directions: false, eta: true, wide: true }, crun);
+    ok('scene: a hand-set URL wins when valid (maps:/car/, no spaces); an invalid one is ignored',
+        cp.sceneUrl({ directions: true, eta: true, override: 'maps:/car/instrumentcluster/map' }) === U + '/map' &&
+        cp.sceneUrl({ directions: true, eta: true, override: 'http://x/y' }) === U + '?showETA=yes' &&
+        cp.sceneUrl({ directions: true, eta: true, override: 'maps:/car/a b' }) === U + '?showETA=yes' &&
+        cp.validScene('maps:/car/instrumentcluster') && !cp.validScene('maps:/car/x\n') && !cp.validScene(''));
     ok('scene: written for hook111 (url), with the view /info names (map without the directions card), not yet sent',
         sc.url === U + '/map?showETA=yes' && !sc.sent && fs.readFileSync(path.join(crun, 'url'), 'utf8') === U + '/map?showETA=yes\n' &&
         fs.readFileSync(path.join(crun, 'view'), 'utf8') === 'map\n');
